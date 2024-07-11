@@ -1,21 +1,21 @@
-import {MOCKS_AUTO_COMPLETE} from "~/MOCKS";
-import type {StackAutocomplete} from "~/types";
+import {MOCKS_AUTO_COMPLETE, MOCKS_STACKS} from "~/MOCKS";
+import type {Stack, StackAutocomplete} from "~/types";
 
 const search = ref('')
 const autoCompleteResults = ref<StackAutocomplete[]>([])
-const stackSelected = ref<StackAutocomplete | null>(null)
+const stackSelected = ref<Stack | undefined>()
 const isFocused = ref(false);
 
 export const useSearchBar = () => {
 
-    const onSelect = (item?: StackAutocomplete ) => {
+    const onSelect = async (item?: StackAutocomplete ) => {
         if (!item) {
             if (autoCompleteResults.value.length === 0) return
             item = autoCompleteResults.value[0]
         }
 
-        stackSelected.value = item
         search.value = item.label
+        stackSelected.value = await fetchStack(item.value)
         autoCompleteResults.value = []
     }
 
@@ -23,8 +23,8 @@ export const useSearchBar = () => {
         return MOCKS_AUTO_COMPLETE.filter((item) => item.label.toLowerCase().includes(search.value.toLowerCase()))
     }
 
-    const fetchStack = async () => {
-
+    const fetchStack = async (stackName: string) => {
+        return MOCKS_STACKS.find((item) => item.name.toLowerCase().includes(stackName.toLowerCase() ?? ''))
     }
 
     return {
@@ -33,6 +33,7 @@ export const useSearchBar = () => {
         autoCompleteResults,
         isFocused,
         stackSelected,
-        fetchAutoComplete
+        fetchAutoComplete,
+        fetchStack
     }
 }
